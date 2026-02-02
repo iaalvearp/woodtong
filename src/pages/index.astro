@@ -5,63 +5,25 @@ import Galeria from "../components/Galeria.astro";
 import ModalCaptacion from "../components/ModalCaptacion.tsx";
 import Footer from "../components/Footer.astro";
 
-// Mock data (En producción vendría de D1)
-const mueblesDestacados = [
-    {
-        id_mueble: 1,
-        nombre: "Silla Lounge Eames",
-        descripcion: "Clásico moderno en piel y madera",
-        precio: 12500,
-        url_imagen:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuCY2Op6XBHjDFC48CqYWgOPapjq8sL1k0RNIwdOhQdQV72kCT51a8fZppeHDAl6w9I4Qz7ElN9cmAA1itz6o-GiJQO6ziTqYQ4OWDq6qTbm-ANtbkcYntKnV-mXVoZHNfq07I58vtAUoSkEYqJXljo3MHwXaKB-Om31adE5vpHr2mAHeZ4ijcuDDopDVK89EwMBSvjhoFPI8u_EfMfOgwjQztG94w9EGqov9MdyxgJKl0mj-Rtea7i_k3w25Y_tJYpPkyYtBb-vdwg",
-        categoria: "Sillas",
-    },
-    {
-        id_mueble: 2,
-        nombre: "Lámpara Nórdica",
-        descripcion: "Iluminación cálida con diseño escandinavo",
-        precio: 4200,
-        url_imagen:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuAw1TV_U5dYDJoSNL3gZSA2-FTpPNDeySg0ahASq_aURm78CCCG2kPHWmscbwX7JHAtuyivQETtpbVcYeWvdOhEw6Ol5wLhwa4Zj6_FpU6tB42-Ffx92uvRjgkcJ-z6fIsDBKFxjj4w9vLWE2wNZJzjiqppyOHo9tLqfKWfulLMf8x4yezg5lp6IaKHyHZMgTTsbnJ2Tysfd3jyr9RQgfHfc9a37d-k3V4MAgKdYZq0QntjgdR4zK_-j1aGDTMZw_7pD5nDTq48k6I",
-        categoria: "Iluminación",
-    },
-    {
-        id_mueble: 3,
-        nombre: "Mesa de Centro Zen",
-        descripcion: "Mesa de madera sólida con acabados naturales",
-        precio: 8900,
-        url_imagen:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuDLKg5bbuB58eSKbhonmFJdS60r_cw2gaAHpQAkwWpqZ8sFykOiyY_qd_VXe7evhyUuSifeQNzhietPDhkzD0Ph72eZZiHsRKhKzVDsgoBrL4fexrgx0J2V3Vr0G5YgIJThan4O9yxgAVtK4AkuEbQkxa7qElEUonrv4WzBZf-AAynDEXcL7LaN_Gn9KWZwUAOUzP6yAgeCRFtfxsasG7QkSoXTpkXkzhTPfwkIOTyWBYQ1rSWdxPucb1I0sqSUs8e21DMKzKMoiKE",
-        categoria: "Mesas",
-    },
-    {
-        id_mueble: 4,
-        nombre: "Sofá Modular Gris",
-        descripcion: "Confort adaptable para cualquier espacio",
-        precio: 22000,
-        url_imagen:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuAaJtHu61dYJYcHFbpz77qpKDTgIUueFXrFsdM2OAqRiLZHJURfoXBLuvJbNSwuicwgNIyxH79iHP2mQTG8lpZcHzGp4QcBS7SjtGF8yXJPoW-JqTgrcEXEloSB4lP5i4VqaISzuqiHxTTYwtGO2tu2HSeAPvv2wm3UxqgdG_fnWVH9zkVkUuBkesucP748SSGvFynhuiTqKD9wv2HOkmD2_3EuOo3OM0gTWsdXgoUWBNgzSqmanVirm8oImVHPXOZRd9Nbxjw27XQ",
-        categoria: "Sofás",
-    },
-    {
-        id_mueble: 5,
-        nombre: "Escritorio Studio",
-        descripcion: "Espacio de trabajo minimalista y eficiente",
-        precio: 15600,
-        url_imagen:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuDTdzTi-WXOearIYiMf0r6FF9J2v5fNkliPYam7C2pE23ubnklKp5MlhKZtXbQbTsZDOTNVlIB0yzzLISypaSrGEngj5_zKv0ho4nYSRZTMvr0Wr8BXHRBHV2I0MW1z8_I8v_OBD-fPhvJLIuwYYJXTbe3VqYZnL5CxqDlxQkJwU1Mj1ZTg9V2ggWSrfXQkix8hJZqeW7juQDtUEFYkzqtRQTuxfblebOE687lw3xynWmp8QAGAcr2Oddnl-m0aICydYDSqnfHZtnC2",
-        categoria: "Oficina",
-    },
-    {
-        id_mueble: 6,
-        nombre: "Sillón Velvet",
-        descripcion: "Toque de elegancia clásica",
-        precio: 18000,
-        url_imagen:
-            "https://lh3.googleusercontent.com/aida-public/AB6AXuB25wwlVTnn0AOv02uip4QG_2_FUKbHCb1No4CSeoYsMhwcgImajw1CzWDhZQdyY25DW1Mc4XQmEdFIQeXMgkAax9K0WfYsevNdd2JCztqPqzy68YHN-UImf-6gNM9gMHgrV4J0APK75v1RuHlXkRDViAocXCkAtPzqS46aQJmAPlpX4lBxM8MFFx92aRS3M2HUsJU5k7xskrskmnpY8pcKO9C_MnJ8JxdqWNwc69FyfXJRYfKIRtoMGNMuSs3rsLPNq96MqolmrGmu",
-        categoria: "Sillas",
-    },
-];
+interface Mueble {
+    id_mueble: number;
+    nombre: string;
+    descripcion: string;
+    precio: number;
+    url_imagen: string;
+    categoria: string;
+    orden_hero: number;
+}
+
+// Conexión real con Cloudflare D1
+const db = Astro.locals.runtime.env.DB;
+
+// Consulta a la base de datos ordenada por orden_hero
+const { results } = await db
+    .prepare("SELECT * FROM Muebles ORDER BY orden_hero ASC")
+    .all();
+
+const mueblesDestacados = results as unknown as Mueble[];
 ---
 
 <LayoutPrincipal titulo="Inicio">

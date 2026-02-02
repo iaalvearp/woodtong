@@ -4,5 +4,5 @@ pages_build_output_dir = "./dist"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "rh-interiors-db"
-database_id = "tu-id-de-base-de-datos-aqui"
+database_name = "woodtong"
+database_id = "97fee977-cfe3-4542-93c8-199eb427d347"

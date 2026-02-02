@@ -1,5 +1,5 @@
 ---
-import LayoutPrincipal from '../../layouts/LayoutPrincipal.astro';
+import LayoutPrincipal from "../../layouts/LayoutPrincipal.astro";
 
 // Interfaces de TypeScript para D1
 interface Mueble {
@@ -21,21 +21,36 @@ interface Prospecto {
     fecha: string;
 }
 
-// En una implementación real con SSR y Cloudflare:
-// const db = Astro.locals.runtime.env.DB;
-// const { results: muebles } = await db.prepare("SELECT * FROM Muebles").all();
+const db = Astro.locals.runtime.env.DB;
+const CLAVE_ADMIN = Astro.locals.runtime.env.ADMIN_PASSWORD || "admin123";
 
-const mueblesMock: Mueble[] = [
-    { id_mueble: 1, nombre: "Silla Lounge Eames", descripcion: "Clásico moderno", precio: 12500, url_imagen: "...", categoria: "Sillas", orden_hero: 1 },
-    { id_mueble: 2, nombre: "Lámpara Nórdica", descripcion: "Iluminación cálida", precio: 4200, url_imagen: "...", categoria: "Iluminación", orden_hero: 2 }
-];
+// Chequeo simple de seguridad vía parámetro de consulta
+const auth = Astro.url.searchParams.get("clave");
+const esAdmin = auth === CLAVE_ADMIN;
 
-const prospectosMock: Prospecto[] = [
-    { id_prospecto: 1, nombre_completo: "Ana García", correo: "ana@ejemplo.com", telefono: "5512345678", id_cupon: "BIENVENIDO15", fecha: "2024-01-30" }
-];
+// Consultas reales a D1
+const { results: mueblesRaw } = await db
+    .prepare("SELECT * FROM Muebles ORDER BY id_mueble DESC")
+    .all();
+const { results: prospectosRaw } = await db
+    .prepare("SELECT * FROM Prospectos ORDER BY fecha DESC")
+    .all();
+
+const muebles = mueblesRaw as unknown as Mueble[];
+const prospectos = prospectosRaw as unknown as Prospecto[];
 ---
 
 <LayoutPrincipal titulo="Administración">
+    {!esAdmin ? (
+        <div class="acceso-denegado">
+            <div class="mensaje-denegado">
+                <span class="material-symbols-outlined">lock</span>
+                <h1>Acceso Protegido</h1>
+                <p>El panel de administración requiere una clave de acceso válida.</p>
+                <code class="hint">Tip local: ?clave={CLAVE_ADMIN}</code>
+            </div>
+        </div>
+    ) : (
     <div class="admin-container">
         <header class="admin-header revelar-arriba">
             <h1>Panel de Control</h1>
@@ -44,8 +59,11 @@ const prospectosMock: Prospecto[] = [
 
         <div class="tabs-container revelar-arriba">
             <div class="tabs-buttons" id="tabs-btns">
-                <button class="tab-btn activo" data-tab="inventario">Inventario</button>
-                <button class="tab-btn" data-tab="prospectos">Prospectos</button>
+                <button class="tab-btn activo" data-tab="inventario"
+                    >Inventario</button
+                >
+                <button class="tab-btn" data-tab="prospectos">Prospectos</button
+                >
             </div>
 
             <div class="tab-content">
@@ -63,17 +81,39 @@ const prospectosMock: Prospecto[] = [
                                 </tr>
                             </thead>
                             <tbody>
-                                {mueblesMock.map(m => (
-                                    <tr data-id={m.id_mueble}>
-                                        <td>{m.id_mueble}</td>
-                                        <td class="editable" data-col="nombre">{m.nombre}</td>
-                                        <td class="editable" data-col="categoria">{m.categoria}</td>
-                                        <td class="editable" data-col="precio">${m.precio}</td>
-                                        <td>
-                                            <button class="btn-editar">Editar</button>
-                                        </td>
-                                    </tr>
-                                ))}
+                                {
+                                    muebles.map((m: any) => (
+                                        <tr data-id={m.id_mueble}>
+                                            <td>{m.id_mueble}</td>
+                                            <td
+                                                class="editable"
+                                                data-col="nombre"
+                                            >
+                                                {m.nombre}
+                                            </td>
+                                            <td
+                                                class="editable"
+                                                data-col="categoria"
+                                            >
+                                                {m.categoria}
+                                            </td>
+                                            <td
+                                                class="editable"
+                                                data-col="precio"
+                                            >
+                                                ${m.precio}
+                                            </td>
+                                            <td>
+                                                <div class="acciones-fila">
+                                                    <button class="btn-editar">
+                                                        Editar
+                                                    </button>
+                                                    <span class="status-icon" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -93,15 +133,21 @@ const prospectosMock: Prospecto[] = [
                                 </tr>
                             </thead>
                             <tbody>
-                                {prospectosMock.map(p => (
-                                    <tr>
-                                        <td>{p.id_prospecto}</td>
-                                        <td>{p.nombre_completo}</td>
-                                        <td>{p.correo}</td>
-                                        <td>{p.id_cupon}</td>
-                                        <td>{p.fecha}</td>
-                                    </tr>
-                                ))}
+                                {
+                                    prospectos.map((p: any) => (
+                                        <tr>
+                                            <td>{p.id_prospecto}</td>
+                                            <td>{p.nombre_completo}</td>
+                                            <td>{p.correo}</td>
+                                            <td>{p.id_cupon || "---"}</td>
+                                            <td>
+                                                {new Date(
+                                                    p.fecha,
+                                                ).toLocaleDateString()}
+                                            </td>
+                                        </tr>
+                                    ))
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -109,6 +155,7 @@ const prospectosMock: Prospecto[] = [
             </div>
         </div>
     </div>
+    )}
 
     <!-- Modal Formulario Dinámico (Simulado) -->
     <div class="modal-admin" id="modal-admin">
@@ -119,7 +166,9 @@ const prospectosMock: Prospecto[] = [
                 <div id="campos-dinamicos"></div>
                 <div class="form-acciones">
                     <button type="button" id="btn-cancelar">Cancelar</button>
-                    <button type="submit" class="btn-guardar">Guardar Cambios</button>
+                    <button type="submit" class="btn-guardar"
+                        >Guardar Cambios</button
+                    >
                 </div>
             </form>
         </div>
@@ -127,54 +176,122 @@ const prospectosMock: Prospecto[] = [
 </LayoutPrincipal>
 
 <script>
-    // Lógica de Pestañas
-    const btns = document.querySelectorAll('.tab-btn');
-    const panes = document.querySelectorAll('.tab-pane');
+    import { actions } from "astro:actions";
 
-    btns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const target = btn.getAttribute('data-tab');
-            
-            btns.forEach(b => b.classList.remove('activo'));
-            panes.forEach(p => p.classList.remove('activo'));
-            
-            btn.classList.add('activo');
-            document.getElementById(`tab-${target}`)?.classList.add('activo');
+    // Lógica de Pestañas
+    const btns = document.querySelectorAll(".tab-btn");
+    const panes = document.querySelectorAll(".tab-pane");
+
+    btns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const target = btn.getAttribute("data-tab");
+            btns.forEach((b) => b.classList.remove("activo"));
+            panes.forEach((p) => p.classList.remove("activo"));
+            btn.classList.add("activo");
+            document.getElementById(`tab-${target}`)?.classList.add("activo");
         });
     });
 
     // Lógica de Edición y Formulario Dinámico
-    const modal = document.getElementById('modal-admin');
-    const camposDinamicos = document.getElementById('campos-dinamicos');
-    const btnCancelar = document.getElementById('btn-cancelar');
+    const modal = document.getElementById("modal-admin");
+    const formDinamico = document.getElementById(
+        "form-dinamico",
+    ) as HTMLFormElement;
+    const camposDinamicos = document.getElementById("campos-dinamicos");
+    const btnCancelar = document.getElementById("btn-cancelar");
+    let idActual: number | null = null;
+    let filaActual: HTMLTableRowElement | null = null;
 
-    document.querySelectorAll('.btn-editar').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const tr = (e.target as HTMLElement).closest('tr');
-            if (!tr) return;
+    document.querySelectorAll(".btn-editar").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            filaActual = (e.target as HTMLElement).closest("tr");
+            if (!filaActual) return;
 
-            const id = tr.getAttribute('data-id');
+            idActual = parseInt(filaActual.getAttribute("data-id") || "0");
             const data = {
-                nombre: tr.querySelector('[data-col="nombre"]')?.textContent,
-                categoria: tr.querySelector('[data-col="categoria"]')?.textContent,
-                precio: tr.querySelector('[data-col="precio"]')?.textContent?.replace('$', '')
+                nombre: filaActual.querySelector('[data-col="nombre"]')
+                    ?.textContent,
+                categoria: filaActual.querySelector('[data-col="categoria"]')
+                    ?.textContent,
+                precio: filaActual
+                    .querySelector('[data-col="precio"]')
+                    ?.textContent?.replace("$", ""),
             };
 
-            // Generar formulario dinámico
             if (camposDinamicos) {
-                camposDinamicos.innerHTML = Object.entries(data).map(([key, val]) => `
+                camposDinamicos.innerHTML = Object.entries(data)
+                    .map(
+                        ([key, val]) => `
                     <div class="campo">
                         <label>${key.charAt(0).toUpperCase() + key.slice(1)}</label>
-                        <input type="${key === 'precio' ? 'number' : 'text'}" name="${key}" value="${val}" />
+                        <input type="${key === "precio" ? "number" : "text"}" name="${key}" value="${val}" required />
                     </div>
-                `).join('');
+                `,
+                    )
+                    .join("");
             }
 
-            modal?.classList.add('activo');
+            modal?.classList.add("activo");
         });
     });
 
-    btnCancelar?.addEventListener('click', () => modal?.classList.remove('activo'));
+    formDinamico?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!idActual || !filaActual) return;
+
+        const formData = new FormData(formDinamico);
+        const nuevoNombre = formData.get("nombre") as string;
+        const nuevaCategoria = formData.get("categoria") as string;
+        const nuevoPrecio = parseFloat(formData.get("precio") as string);
+
+        const statusIcon = filaActual.querySelector(".status-icon");
+        const btnGuardar = formDinamico.querySelector(
+            ".btn-guardar",
+        ) as HTMLButtonElement;
+
+        // Visual Feedback: Guardando
+        if (statusIcon) statusIcon.innerHTML = "⌛";
+        btnGuardar.disabled = true;
+        btnGuardar.textContent = "Guardando...";
+
+        const { error } = await actions.actualizarInventario({
+            idMueble: idActual,
+            nuevoNombre,
+            nuevaCategoria,
+            nuevoPrecio,
+        });
+
+        if (!error) {
+            // Actualizar UI
+            filaActual.querySelector('[data-col="nombre"]')!.textContent =
+                nuevoNombre;
+            filaActual.querySelector('[data-col="categoria"]')!.textContent =
+                nuevaCategoria;
+            filaActual.querySelector('[data-col="precio"]')!.textContent =
+                `$${nuevoPrecio}`;
+
+            // Visual Feedback: Éxito
+            if (statusIcon) {
+                statusIcon.innerHTML = "✅";
+                statusIcon.classList.add("exito");
+                setTimeout(() => {
+                    statusIcon.innerHTML = "";
+                    statusIcon.classList.remove("exito");
+                }, 3000);
+            }
+            modal?.classList.remove("activo");
+        } else {
+            if (statusIcon) statusIcon.innerHTML = "❌";
+            alert("Error al actualizar");
+        }
+
+        btnGuardar.disabled = false;
+        btnGuardar.textContent = "Guardar Cambios";
+    });
+
+    btnCancelar?.addEventListener("click", () =>
+        modal?.classList.remove("activo"),
+    );
 </script>
 
 <style>
@@ -196,6 +313,46 @@ const prospectosMock: Prospecto[] = [
 
     .admin-header p {
         color: var(--texto-secundario);
+    }
+
+    /* Acceso Denegado Styles */
+    .acceso-denegado {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .mensaje-denegado {
+        background: var(--gris-apple);
+        padding: 3rem;
+        border-radius: 2rem;
+        max-width: 400px;
+        box-shadow: 0 10px 30px var(--sombra-suave);
+    }
+
+    .mensaje-denegado span {
+        font-size: 4rem;
+        color: var(--primario);
+        margin-bottom: 1rem;
+    }
+
+    .mensaje-denegado h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: var(--oscuro);
+    }
+
+    .hint {
+        display: block;
+        margin-top: 2rem;
+        font-size: 0.75rem;
+        color: var(--texto-secundario);
+        background: rgba(0, 0, 0, 0.05);
+        padding: 0.5rem;
+        border-radius: 0.5rem;
     }
 
     .tabs-buttons {
@@ -279,6 +436,22 @@ const prospectosMock: Prospecto[] = [
         background: #e1e1e3;
     }
 
+    .acciones-fila {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-icon {
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .status-icon.exito {
+        color: #064c39;
+        transform: scale(1.2);
+    }
+
     /* Modal Admin Style */
     .modal-admin {
         position: fixed;
@@ -354,7 +527,13 @@ const prospectosMock: Prospecto[] = [
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 </style>
