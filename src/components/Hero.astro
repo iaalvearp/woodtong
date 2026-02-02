@@ -1,0 +1,209 @@
+---
+interface ImagenHero {
+    url: string;
+    descripcion: string;
+}
+
+const imagenes: ImagenHero[] = [
+    {
+        url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDDAFHPU-mqbnJYpxHBtkha5rXz5sfaqYDn0bK9SarXsUqfEfFt_3QUQwqfcQnKEytB0L1MQcXZm3vlqBS3GuqrNMrXkgoUIvHouQArZDKpxTbO279YrB9rcNZp4KZ0fgGJHQ1wVZvYDEYYjtBfCDFc3Eu_AOCSwsC6R48nigJA69fJxhK7D4VZRAlJ752JKdpvqBiHNVlzLyXEI1I_7Fe8TE4TPFQljt1dcFnOmdmPtf_CPFWCOCuwThh9GV3Fp9K3dZFkAWZrf7A",
+        descripcion:
+            "Sala de estar minimalista moderna con sofá de terciopelo verde esmeralda",
+    },
+    {
+        url: "https://lh3.googleusercontent.com/aida-public/AB6AXuBJM7oJlOJwV9HQy03ybXRfLBsu1ZFTz_1VoIZ_qLgjfY7EBx1f6d0Kks07SPQZCGMjaOR0rsA9VyRHH3S4pOCIK0cufVEx5smyV9sQrxP5xj7AHIDrqo1TD2rBvu08IIjkxHTKThd2pQjjo1yQUcF-egqQwHiH5hB01UADKe83ivZxB_qinTxYboRuYadAnJddAreY_Z8hv-65M8sbC0npaX3vHZaOIeZgTg6wNiOnF7nACa6TM8kLeNHc28IFvpIVl5rHpowo5JuZ",
+        descripcion:
+            "Sala de estar moderna con sofá blanco y luz natural tenue",
+    },
+    {
+        url: "https://lh3.googleusercontent.com/aida-public/AB6AXuAdtucZC4muZeKXZwR7ZZy-hec2xy6ol5kYBWWnnSbquw4PM8B7VWj4ZrN0OwZ6QPSUheXWCayUAXj4K3eIJokw5J2_PoyFEaqXjyl4QcohnNE8QUP2dLnFwfB9ELQLAc7jOjhOvV1j0T3sHQsaAajGWuyLL1eSweniivh7wpccOKvo-vC_mE1ndy-oKXJSJoGKkSPA2I90I7bw1Jw0ZZhAVgM4oiQFvJswZ2FsMOdbwmvas5oTYHAtTUdh4fqfIuuAyl2xB1pp-KwV",
+        descripcion: "Sillón lounge elegante en una esquina moderna",
+    },
+];
+
+// Duplicamos para el efecto de scroll infinito
+const imagenesScroll = [...imagenes, ...imagenes, ...imagenes];
+---
+
+<section class="hero-container">
+    <div class="hero-overlay"></div>
+    <div class="hero-content revelar-arriba">
+        <h1 class="hero-titulo">Redefiniendo el Lujo.</h1>
+        <p class="hero-subtitulo">
+            Diseño excepcional para espacios que cuentan una historia.
+        </p>
+        <div class="hero-acciones">
+            <button class="btn-primario">Ver Colección</button>
+            <button class="btn-secundario">Diseña tu Espacio</button>
+        </div>
+    </div>
+
+    <!-- Carrusel Infinito Background -->
+    <div class="carrusel-infinito">
+        <div class="track-carrusel">
+            {
+                imagenesScroll.map((img) => (
+                    <div class="slide-hero">
+                        <img src={img.url} alt={img.descripcion} />
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    .hero-container {
+        position: relative;
+        height: 90vh;
+        min-height: 600px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: var(--oscuro);
+    }
+
+    .hero-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            rgba(6, 76, 57, 0.5) 30%,
+            rgba(6, 76, 57, 0.2) 100%
+        );
+        z-index: 3;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 10;
+        text-align: center;
+        color: var(--blanco);
+        max-width: 800px;
+        padding: 0 1.5rem;
+    }
+
+    .hero-titulo {
+        font-size: clamp(3rem, 10vw, 6rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        margin-bottom: 1.5rem;
+        line-height: 1;
+    }
+
+    .hero-subtitulo {
+        font-size: clamp(1.1rem, 3vw, 1.5rem);
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 3rem;
+        max-width: 500px;
+        margin-inline: auto;
+    }
+
+    .hero-acciones {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .btn-primario {
+        background-color: var(--blanco);
+        color: var(--oscuro);
+        border: none;
+        padding: 1rem 2.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition:
+            transform 0.2s ease,
+            background-color 0.2s ease;
+    }
+
+    .btn-primario:hover {
+        transform: scale(1.05);
+        background-color: var(--gris-apple);
+    }
+
+    .btn-secundario {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: var(--blanco);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 1rem 2.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        transition: background-color 0.2s ease;
+    }
+
+    .btn-secundario:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Carrusel Logic */
+    .carrusel-infinito {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+    }
+
+    .carrusel-infinito::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.3) 0%,
+            rgba(0, 0, 0, 0.5) 100%
+        );
+        z-index: 2;
+    }
+
+    .track-carrusel {
+        display: flex;
+        width: fit-content;
+        height: 100%;
+        animation: scroll-hero 60s linear infinite;
+    }
+
+    .slide-hero {
+        width: 100vw;
+        height: 100%;
+        flex-shrink: 0;
+    }
+
+    .slide-hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    @keyframes scroll-hero {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-300vw);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .hero-acciones {
+            flex-direction: column;
+            width: 100%;
+            max-width: 300px;
+            margin-inline: auto;
+        }
+
+        .btn-primario,
+        .btn-secundario {
+            width: 100%;
+        }
+    }
+</style>

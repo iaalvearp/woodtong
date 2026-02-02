@@ -1,0 +1,180 @@
+---
+// En un escenario real, estos datos vendrían de Astro.locals.runtime.env.DB
+interface Mueble {
+    id_mueble: number;
+    nombre: string;
+    descripcion: string;
+    precio: number;
+    url_imagen: string;
+    categoria: string;
+}
+
+interface Props {
+    muebles: Mueble[];
+}
+
+const { muebles } = Astro.props;
+---
+
+<section class="seccion-galeria">
+    <div class="header-galeria revelar-arriba">
+        <h2>Colección Destacada</h2>
+        <p>Piezas seleccionadas que definen la esencia de tu hogar.</p>
+    </div>
+
+    <div class="grid-galeria">
+        {muebles.map((mueble, indice) => (
+            <div 
+                class={`tarjeta-producto revelar-arriba ${indice > 4 ? 'elemento-bloqueado' : ''}`}
+                style={`transition-delay: ${indice * 0.1}s`}
+            >
+                <div class="contenedor-imagen">
+                    <img src={mueble.url_imagen} alt={mueble.descripcion} loading="lazy" />
+                    {indice > 4 && (
+                        <div class="overlay-bloqueo">
+                            <button class="btn-desbloquear" id="btn-abrir-modal">
+                                <span>Ver más detalles</span>
+                                <span class="material-symbols-outlined">lock_open</span>
+                            </button>
+                        </div>
+                    )}
+                </div>
+                <div class="info-producto">
+                    <span class="categoria">{mueble.categoria}</span>
+                    <h3>{mueble.nombre}</h3>
+                    <p class="precio">${mueble.precio.toLocaleString('es-MX')}</p>
+                </div>
+            </div>
+        ))}
+    </div>
+</section>
+
+<style>
+    .seccion-galeria {
+        max-width: 1200px;
+        margin: 4rem auto;
+        padding: 0 1.5rem;
+    }
+
+    .header-galeria {
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .header-galeria h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--oscuro);
+    }
+
+    .header-galeria p {
+        color: var(--texto-secundario);
+        font-size: 1.1rem;
+    }
+
+    .grid-galeria {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+
+    .tarjeta-producto {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .contenedor-imagen {
+        position: relative;
+        aspect-ratio: 1/1;
+        background-color: var(--gris-apple);
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 4px 20px var(--sombra-suave);
+    }
+
+    .contenedor-imagen img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .tarjeta-producto:hover .contenedor-imagen img {
+        transform: scale(1.08);
+    }
+
+    .elemento-bloqueado .contenedor-imagen img {
+        filter: blur(12px);
+    }
+
+    .overlay-bloqueo {
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .btn-desbloquear {
+        background: var(--blanco);
+        border: none;
+        padding: 0.75rem 1.25rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: var(--oscuro);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .btn-desbloquear:hover {
+        transform: translateY(-2px);
+    }
+
+    .info-producto {
+        padding: 0 0.5rem;
+    }
+
+    .categoria {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--primario);
+        letter-spacing: 0.05em;
+    }
+
+    .info-producto h3 {
+        font-size: 1.125rem;
+        margin: 0.25rem 0;
+        font-weight: 600;
+        color: var(--texto-apple);
+    }
+
+    .precio {
+        font-size: 0.875rem;
+        color: var(--texto-secundario);
+    }
+
+    @media (min-width: 768px) {
+        .grid-galeria {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .grid-galeria {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+</style>
