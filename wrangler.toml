@@ -6,5 +6,3 @@ pages_build_output_dir = "./dist"
 binding = "DB"
 database_name = "woodtong"
 database_id = "97fee977-cfe3-4542-93c8-199eb427d347"
-
-compatibility_flags = [ "nodejs_compat" ]
