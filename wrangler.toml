@@ -1,8 +1,13 @@
 name = "rh-interiors"
-compatibility_date = "2026-02-02"
+compatibility_date = "2026-02-03"
+compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "./dist"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "woodtong"
 database_id = "97fee977-cfe3-4542-93c8-199eb427d347"
+
+[vars]
+SESSION_EXPIRATION_DAYS = "7"
+REFRESH_THRESHOLD_HOURS = "1"

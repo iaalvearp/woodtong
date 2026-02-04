@@ -22,35 +22,35 @@ interface Prospecto {
 }
 
 const db = Astro.locals.runtime.env.DB;
-const CLAVE_ADMIN = Astro.locals.runtime.env.ADMIN_PASSWORD || "admin123";
 
-// Chequeo simple de seguridad vía parámetro de consulta
-const auth = Astro.url.searchParams.get("clave");
-const esAdmin = auth === CLAVE_ADMIN;
+// Verificar autenticación desde el middleware
+const usuario = Astro.locals.usuario;
+const esAdmin = usuario?.rol === "admin";
 
 // Consultas reales a D1
 const { results: mueblesRaw } = await db
-    .prepare("SELECT * FROM Muebles ORDER BY id_mueble DESC")
-    .all();
+	.prepare("SELECT * FROM Muebles ORDER BY id_mueble DESC")
+	.all();
 const { results: prospectosRaw } = await db
-    .prepare("SELECT * FROM Prospectos ORDER BY fecha DESC")
-    .all();
+	.prepare("SELECT * FROM Prospectos ORDER BY fecha DESC")
+	.all();
 
 const muebles = mueblesRaw as unknown as Mueble[];
 const prospectos = prospectosRaw as unknown as Prospecto[];
 ---
 
 <LayoutPrincipal titulo="Administración">
-    {!esAdmin ? (
-        <div class="acceso-denegado">
-            <div class="mensaje-denegado">
-                <span class="material-symbols-outlined">lock</span>
-                <h1>Acceso Protegido</h1>
-                <p>El panel de administración requiere una clave de acceso válida.</p>
-                <code class="hint">Tip local: ?clave={CLAVE_ADMIN}</code>
-            </div>
-        </div>
-    ) : (
+	{
+		!esAdmin ? (
+			<div class="acceso-denegado">
+				<div class="mensaje-denegado">
+					<span class="material-symbols-outlined">lock</span>
+					<h1>Acceso Restringido</h1>
+					<p>Esta área requiere permisos de administrador.</p>
+					<a href="/login" class="btn-login-link">Iniciar Sesión</a>
+				</div>
+			</div>
+		) : (
     <div class="admin-container">
         <header class="admin-header revelar-arriba">
             <h1>Panel de Control</h1>

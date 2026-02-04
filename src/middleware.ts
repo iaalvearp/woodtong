@@ -1,0 +1,83 @@
+/**
+ * Middleware de Autenticación - El Portero
+ * Intercepta todas las peticiones para validar sesiones y proteger rutas
+ */
+
+import { defineMiddleware } from "astro:middleware";
+import { validarSesion, necesitaRenovacion, renovarSesion } from "./utils/sesion";
+
+export const onRequest = defineMiddleware(async (context, next) => {
+    const db = context.locals.runtime.env.DB;
+
+    // Extraer token de sesión de las cookies
+    const tokenSesion = context.cookies.get("session_token")?.value;
+
+    // Si no hay token, el usuario es anónimo
+    if (!tokenSesion) {
+        context.locals.usuario = undefined;
+
+        // Verificar si intenta acceder a rutas protegidas
+        if (context.url.pathname.startsWith("/admin")) {
+            // Silent Redirect - Redirigir sin explicaciones (estilo Apple)
+            return context.redirect("/", 302);
+        }
+
+        return next();
+    }
+
+    // Validar la sesión en la base de datos
+    const usuario = await validarSesion(db, tokenSesion);
+
+    if (!usuario) {
+        // Sesión inválida o expirada, limpiar cookie
+        context.cookies.delete("session_token", {
+            path: "/",
+        });
+        context.locals.usuario = undefined;
+
+        // Silent Redirect si intenta acceder a admin
+        if (context.url.pathname.startsWith("/admin")) {
+            return context.redirect("/", 302);
+        }
+
+        return next();
+    }
+
+    // Inyectar usuario en locals para acceso en páginas
+    context.locals.usuario = usuario;
+
+    // Freshness Check: Verificar si la sesión necesita renovación
+    const debeRenovar = await necesitaRenovacion(
+        db,
+        tokenSesion,
+        parseInt(context.locals.runtime.env.REFRESH_THRESHOLD_HOURS || "1"),
+    );
+
+    if (debeRenovar) {
+        const diasExpiracion = parseInt(
+            context.locals.runtime.env.SESSION_EXPIRATION_DAYS || "7",
+        );
+        const nuevoToken = await renovarSesion(db, tokenSesion, diasExpiracion);
+
+        if (nuevoToken) {
+            // Actualizar cookie con nuevo token
+            context.cookies.set("session_token", nuevoToken, {
+                httpOnly: true,
+                secure: import.meta.env.PROD, // Solo HTTPS en producción
+                sameSite: "strict",
+                maxAge: diasExpiracion * 24 * 60 * 60, // Convertir días a segundos
+                path: "/",
+            });
+        }
+    }
+
+    // Protección de rutas /admin/*
+    if (context.url.pathname.startsWith("/admin")) {
+        if (usuario.rol !== "admin") {
+            // Silent Redirect - Usuario no tiene permisos de admin
+            return context.redirect("/", 302);
+        }
+    }
+
+    return next();
+});

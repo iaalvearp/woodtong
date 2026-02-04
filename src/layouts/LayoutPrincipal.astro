@@ -1,4 +1,6 @@
 ---
+import IconoAcceso from "../components/IconoAcceso.tsx";
+
 interface Props {
 	titulo: string;
 	descripcion?: string;
@@ -8,6 +10,11 @@ const {
 	titulo,
 	descripcion = "Woodtong - Redefiniendo el lujo y el diseño minimalista para tu hogar.",
 } = Astro.props;
+
+// Detección de sesión desde el middleware
+const usuario = Astro.locals.usuario;
+const usuarioActivo = !!usuario;
+const rolUsuario = usuario?.rol;
 ---
 
 <!doctype html>
@@ -176,11 +183,11 @@ const {
 				</div>
 
 				<div class="acciones">
-					<button class="btn-carrito">
-						<span class="material-symbols-outlined"
-							>shopping_bag</span
-						>
-					</button>
+					<IconoAcceso
+						client:load
+						usuarioActivo={usuarioActivo}
+						rolUsuario={rolUsuario}
+					/>
 					<button class="menu-hamburguesa" id="btn-menu">
 						<span class="material-symbols-outlined">menu</span>
 					</button>
@@ -317,23 +324,24 @@ const {
 				gap: 1rem;
 			}
 
-			.btn-carrito,
+			.btn-acceso,
 			.menu-hamburguesa {
 				background: none;
 				border: none;
 				cursor: pointer;
-				color: var(--texto-apple);
+				color: var(--texto-primario);
 				display: flex;
 				align-items: center;
 				justify-content: center;
 				padding: 8px;
 				border-radius: 50%;
 				transition: background-color 0.2s ease;
+				text-decoration: none;
 			}
 
-			.btn-carrito:hover,
+			.btn-acceso:hover,
 			.menu-hamburguesa:hover {
-				background-color: rgba(0, 0, 0, 0.05);
+				background-color: rgba(255, 255, 255, 0.1);
 			}
 
 			.menu-movil {

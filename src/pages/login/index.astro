@@ -1,0 +1,300 @@
+---
+import LayoutPrincipal from "../../layouts/LayoutPrincipal.astro";
+---
+
+<LayoutPrincipal titulo="Iniciar Sesión">
+    <div class="login-container">
+        <div class="login-card revelar-arriba">
+            <div class="login-header">
+                <h1>Bienvenido</h1>
+                <p>Ingresa tus credenciales para continuar</p>
+            </div>
+
+            <form id="form-login" class="login-form">
+                <div class="campo">
+                    <label for="correo">Correo electrónico</label>
+                    <input
+                        type="email"
+                        id="correo"
+                        name="correo"
+                        required
+                        autocomplete="email"
+                        placeholder="tu@correo.com"
+                    />
+                </div>
+
+                <div class="campo">
+                    <label for="clave">Contraseña</label>
+                    <input
+                        type="password"
+                        id="clave"
+                        name="clave"
+                        required
+                        autocomplete="current-password"
+                        placeholder="••••••••"
+                    />
+                </div>
+
+                <div id="mensaje-error" class="mensaje-error"></div>
+
+                <button type="submit" class="btn-login" id="btn-login">
+                    <span id="btn-texto">Iniciar Sesión</span>
+                    <span
+                        id="btn-spinner"
+                        class="spinner"
+                        style="display: none;"></span>
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p>
+                    ¿No tienes cuenta? Explora nuestra <a href="/">galería</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</LayoutPrincipal>
+
+<script>
+    import { actions } from "astro:actions";
+
+    const form = document.getElementById("form-login") as HTMLFormElement;
+    const btnLogin = document.getElementById("btn-login") as HTMLButtonElement;
+    const btnTexto = document.getElementById("btn-texto") as HTMLSpanElement;
+    const btnSpinner = document.getElementById(
+        "btn-spinner",
+    ) as HTMLSpanElement;
+    const mensajeError = document.getElementById(
+        "mensaje-error",
+    ) as HTMLDivElement;
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Limpiar mensaje de error previo
+        mensajeError.textContent = "";
+        mensajeError.style.display = "none";
+
+        // Estado de carga
+        btnLogin.disabled = true;
+        btnTexto.style.display = "none";
+        btnSpinner.style.display = "inline-block";
+
+        const formData = new FormData(form);
+        const correo = formData.get("correo") as string;
+        const clave = formData.get("clave") as string;
+
+        try {
+            const { data, error } = await actions.iniciarSesion({
+                correo,
+                clave,
+            });
+
+            if (error) {
+                throw new Error(error.message || "Error al iniciar sesión");
+            }
+
+            // Éxito - Redirigir al inicio
+            window.location.href = "/";
+        } catch (error) {
+            // Mostrar error
+            mensajeError.textContent =
+                error instanceof Error
+                    ? error.message
+                    : "Error al iniciar sesión";
+            mensajeError.style.display = "block";
+
+            // Restaurar botón
+            btnLogin.disabled = false;
+            btnTexto.style.display = "inline";
+            btnSpinner.style.display = "none";
+        }
+    });
+</script>
+
+<style>
+    .login-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: linear-gradient(
+            180deg,
+            var(--primario) 40%,
+            var(--texto-primario-200) 100%
+        );
+    }
+
+    .login-card {
+        background: var(--blanco);
+        width: 100%;
+        max-width: 420px;
+        padding: 3rem;
+        border-radius: 2rem;
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.08),
+            0 0 1px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .login-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: var(--primario);
+    }
+
+    .login-header p {
+        color: var(--texto-secundario);
+        font-size: 0.9375rem;
+        opacity: 0.8;
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .campo {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .campo label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--texto-apple);
+        letter-spacing: -0.01em;
+    }
+
+    .campo input {
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        border: 1.5px solid rgba(0, 0, 0, 0.08);
+        background: var(--gris-apple);
+        outline: none;
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.2s ease;
+    }
+
+    .campo input:focus {
+        border-color: var(--primario);
+        background: var(--blanco);
+        box-shadow: 0 0 0 4px rgba(6, 76, 57, 0.08);
+    }
+
+    .campo input::placeholder {
+        color: var(--texto-secundario);
+        opacity: 0.5;
+    }
+
+    .mensaje-error {
+        display: none;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        background: rgba(255, 59, 48, 0.08);
+        color: #d32f2f;
+        font-size: 0.875rem;
+        text-align: center;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .btn-login {
+        margin-top: 0.5rem;
+        padding: 1.125rem;
+        border-radius: 1rem;
+        border: none;
+        background: var(--primario);
+        color: var(--blanco);
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-login:hover:not(:disabled) {
+        background: #053a2c;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(6, 76, 57, 0.2);
+    }
+
+    .btn-login:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    .btn-login:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: var(--blanco);
+        border-radius: 50%;
+        animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .login-footer {
+        margin-top: 2rem;
+        text-align: center;
+    }
+
+    .login-footer p {
+        font-size: 0.875rem;
+        color: var(--texto-secundario);
+        opacity: 0.8;
+    }
+
+    .login-footer a {
+        color: var(--primario);
+        text-decoration: none;
+        font-weight: 600;
+        transition: opacity 0.2s ease;
+    }
+
+    .login-footer a:hover {
+        opacity: 0.7;
+    }
+
+    @media (max-width: 480px) {
+        .login-card {
+            padding: 2rem;
+        }
+
+        .login-header h1 {
+            font-size: 1.75rem;
+        }
+    }
+</style>

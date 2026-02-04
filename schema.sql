@@ -27,6 +27,31 @@ CREATE TABLE IF NOT EXISTS Recomendaciones (
     estrellas INTEGER
 );
 
+-- Tabla de Usuarios (Sistema de Autenticación)
+CREATE TABLE IF NOT EXISTS Usuarios (
+    id_usuario INTEGER PRIMARY KEY AUTOINCREMENT,
+    correo TEXT UNIQUE NOT NULL,
+    clave_encriptada TEXT NOT NULL,
+    rol TEXT DEFAULT 'cliente' CHECK(rol IN ('cliente', 'admin')),
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla de Sesiones (Gestión de Tokens)
+CREATE TABLE IF NOT EXISTS Sesiones (
+    id_sesion INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_usuario INTEGER NOT NULL,
+    token_sesion TEXT UNIQUE NOT NULL,
+    token_refresco TEXT UNIQUE NOT NULL,
+    expiracion DATETIME NOT NULL,
+    fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES Usuarios(id_usuario) ON DELETE CASCADE
+);
+
+-- Índices para optimizar consultas de sesión
+CREATE INDEX IF NOT EXISTS idx_sesiones_token ON Sesiones(token_sesion);
+CREATE INDEX IF NOT EXISTS idx_sesiones_usuario ON Sesiones(id_usuario);
+CREATE INDEX IF NOT EXISTS idx_sesiones_expiracion ON Sesiones(expiracion);
+
 -- Datos Iniciales (Opcional)
 INSERT INTO Muebles (nombre, descripcion, precio, url_imagen, categoria, orden_hero) VALUES 
 ('Silla Lounge Eames', 'Clásico moderno en piel y madera', 12500, 'https://lh3.googleusercontent.com/aida-public/AB6AXuCY2Op6XBHjDFC48CqYWgOPapjq8sL1k0RNIwdOhQdQV72kCT51a8fZppeHDAl6w9I4Qz7ElN9cmAA1itz6o-GiJQO6ziTqYQ4OWDq6qTbm-ANtbkcYntKnV-mXVoZHNfq07I58vtAUoSkEYqJXljo3MHwXaKB-Om31adE5vpHr2mAHeZ4ijcuDDopDVK89EwMBSvjhoFPI8u_EfMfOgwjQztG94w9EGqov9MdyxgJKl0mj-Rtea7i_k3w25Y_tJYpPkyYtBb-vdwg', 'Sillas', 1),
