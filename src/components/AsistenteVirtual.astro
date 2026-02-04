@@ -1,0 +1,712 @@
+---
+/**
+ * AsistenteVirtual.astro
+ * Componente de chat con Dialogflow Messenger (ES - Essentials)
+ *
+ * Características:
+ * - Integración con Google Dialogflow ES (Essentials)
+ * - Diseño personalizado con estilo Apple
+ * - Carga asíncrona para optimización de PageSpeed
+ * - Trusted Types para seguridad en navegadores Chromium
+ * - Posicionamiento en esquina inferior derecha
+ * - Idioma: Español
+ */
+
+const agentId = import.meta.env.PUBLIC_DIALOGFLOW_AGENT_ID;
+const chatTitle = import.meta.env.PUBLIC_DIALOGFLOW_CHAT_TITLE;
+---
+
+<!-- Dialogflow Messenger -->
+<df-messenger
+    intent="WELCOME"
+    chat-title={chatTitle}
+    agent-id={agentId}
+    language-code="es"></df-messenger>
+
+<style is:global>
+    /* ========================================
+       ESTILOS PARA DIALOGFLOW ES (ESSENTIALS)
+       Estilo Apple: Bordes redondeados, sombras suaves, tipografía Inter
+       ======================================== */
+
+    /* Configuración del contenedor principal con variables CSS de Dialogflow */
+    df-messenger {
+        /* Tipografía */
+        --df-messenger-font-family:
+            "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            sans-serif;
+        --df-messenger-font-size: 14px;
+
+        /* Color primario */
+        --df-messenger-primary-color: var(--primario);
+
+        /* Barra de título */
+        --df-messenger-titlebar-background: var(--primario);
+        --df-messenger-titlebar-font-color: var(--texto-primario-50);
+        --df-messenger-titlebar-padding: 20px;
+
+        /* Fondo del chat */
+        --df-messenger-chat-background-color: var(--texto-primario-50);
+        --df-messenger-message-user-font-color: var(--primario);
+
+        /* Mensajes del bot */
+        --df-messenger-bot-message: var(--gris-apple);
+        --df-messenger-message-bot-background: var(--gris-apple);
+        --df-messenger-message-bot-font-color: var(--primario);
+        --df-messenger-message-bot-border-radius: 16px;
+
+        /* Mensajes del usuario */
+        --df-messenger-user-message: var(--primario);
+        --df-messenger-message-user-background: var(--primario);
+        --df-messenger-message-user-font-color: var(--texto-primario-50);
+        --df-messenger-message-user-border-radius: 16px;
+
+        /* Input de texto */
+        --df-messenger-input-box-color: var(--texto-primario-50);
+        --df-messenger-input-font-color: var(--primario);
+        --df-messenger-input-placeholder-font-color: var(--texto-secundario);
+        --df-messenger-input-border-color: transparent;
+        --df-messenger-input-box-focus-border-color: transparent;
+        --df-messenger-input-background: var(--texto-primario-50);
+        --df-messenger-input-background-color: var(--texto-primario-50);
+
+        /* Botón de enviar */
+        --df-messenger-send-icon-color: var(--primario);
+        --df-messenger-send-icon-color-hover: var(--hover-primario);
+
+        /* Burbuja del chat (botón flotante) */
+        --df-messenger-chat-bubble-background: var(--primario);
+        --df-messenger-chat-bubble-icon-color: var(--texto-primario-50);
+        --df-messenger-minimized-chat-close-icon-color: var(
+            --texto-primario-50
+        );
+
+        /* Botones */
+        --df-messenger-button-titlebar-color: var(--texto-primario-50);
+        --df-messenger-button-titlebar-font-color: var(--primario);
+
+        /* Posicionamiento */
+        position: fixed !important;
+        bottom: 24px !important;
+        right: 24px !important;
+        z-index: 999 !important;
+        max-width: calc(100vw - 48px) !important;
+    }
+
+    /* Estilos adicionales para elementos internos del shadow DOM */
+    df-messenger {
+        /* Borde y sombra para la burbuja del chat */
+        --df-messenger-chat-bubble-border: 2px solid #e0ebe0;
+        --df-messenger-chat-bubble-box-shadow: 0 10px 25px rgba(6, 76, 57, 0.15);
+
+        /* Sombra para la ventana del chat */
+        --df-messenger-chat-window-box-shadow: 0 20px 60px rgba(6, 76, 57, 0.2);
+        --df-messenger-chat-window-border-radius: 24px;
+    }
+
+    /* Animación de entrada suave */
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    df-messenger {
+        animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    /* Responsive: Ajustes para móviles */
+    @media (max-width: 768px) {
+        df-messenger {
+            bottom: 16px !important;
+            right: 16px !important;
+        }
+    }
+</style>
+
+<!-- Script adicional para aplicar estilos al shadow DOM -->
+<script is:inline>
+    /**
+     * Aplicar estilos personalizados al shadow DOM de Dialogflow ES
+     *
+     * Dialogflow ES usa shadow DOM, lo que significa que los estilos CSS normales
+     * no pueden penetrar. Este script inyecta estilos directamente en el shadow DOM
+     * una vez que el componente se ha cargado.
+     *
+     * IMPORTANTE: Usa MutationObserver para reinyectar estilos si Dialogflow
+     * los sobrescribe al terminar de cargar.
+     */
+
+    let estilosAplicados = false;
+
+    function aplicarEstilosDialogflow() {
+        const dfMessenger = document.querySelector("df-messenger");
+
+        if (!dfMessenger) {
+            // Si el componente aún no está listo, reintentamos en 500ms
+            setTimeout(aplicarEstilosDialogflow, 500);
+            return;
+        }
+
+        // Esperar a que el shadow root esté disponible
+        if (!dfMessenger.shadowRoot) {
+            setTimeout(aplicarEstilosDialogflow, 500);
+            return;
+        }
+
+        // Verificar si ya aplicamos los estilos
+        const estiloExistente = dfMessenger.shadowRoot.querySelector(
+            "#estilos-apple-custom",
+        );
+        if (estiloExistente) {
+            return; // Ya están aplicados
+        }
+
+        // Leer las variables CSS del :root del documento
+        const rootStyles = getComputedStyle(document.documentElement);
+        const primario =
+            rootStyles.getPropertyValue("--primario").trim() || "#064c39";
+        const blanco =
+            rootStyles.getPropertyValue("--blanco").trim() || "#ffffff";
+        const grisApple =
+            rootStyles.getPropertyValue("--gris-apple").trim() || "#f5f5f7";
+        const textoApple =
+            rootStyles.getPropertyValue("--texto-apple").trim() || "#1d1d1f";
+        const textoPrimario =
+            rootStyles.getPropertyValue("--texto-primario").trim() || "#e0ebe0";
+        const textoPrimario50 =
+            rootStyles.getPropertyValue("--texto-primario-50").trim() ||
+            "#f2f7f3";
+
+        // Crear una hoja de estilos personalizada usando las variables del documento
+        const style = document.createElement("style");
+        style.id = "estilos-apple-custom"; // ID para identificar nuestros estilos
+        style.textContent = `
+            /* Estilos Apple para Dialogflow ES */
+            
+            /* Contenedor del botón - debe ser circular también */
+            df-messenger-chat-bubble,
+            .df-messenger-chat-bubble-container {
+                width: 64px !important;
+                height: 64px !important;
+                border-radius: 9999px !important;
+                overflow: visible !important;
+            }
+
+            /* Burbuja del chat (botón flotante) - Estilo Apple */
+            /* Aplica a todos los estados: cerrado, abierto, y botón de cerrar */
+            button[aria-label*="chat"],
+            button[aria-label*="Open"],
+            button[aria-label*="Close"],
+            .df-chat-bubble-button,
+            df-messenger-chat-bubble button {
+                width: 64px !important;
+                height: 64px !important;
+                min-width: 64px !important;
+                min-height: 64px !important;
+                max-width: 64px !important;
+                max-height: 64px !important;
+                border-radius: 9999px !important;
+                background-color: ${primario} !important;
+                border: 2px solid ${textoPrimario} !important;
+                box-shadow: 0 10px 25px rgba(6, 76, 57, 0.15) !important;
+                transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+                position: relative !important;
+                overflow: hidden !important;
+                padding: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            button[aria-label*="chat"]:hover,
+            button[aria-label*="Open"]:hover,
+            button[aria-label*="Close"]:hover,
+            .df-chat-bubble-button:hover {
+                transform: scale(1.05) !important;
+                box-shadow: 0 15px 35px rgba(6, 76, 57, 0.25) !important;
+            }
+
+            /* Ocultar el texto "¡Hola!" y cualquier contenido de texto */
+            button[aria-label*="chat"] *:not(img),
+            button[aria-label*="Open"] *:not(img),
+            button[aria-label*="Close"] *:not(img),
+            .df-chat-bubble-button *:not(img) {
+                font-size: 0 !important;
+                color: transparent !important;
+                text-indent: -9999px !important;
+            }
+
+            /* Asegurar que el ícono sea visible si existe */
+            button[aria-label*="chat"] img,
+            button[aria-label*="Open"] img,
+            button[aria-label*="Close"] img,
+            .df-chat-bubble-button img,
+            .df-chat-bubble-icon,
+            df-messenger-chat-bubble img {
+                display: block !important;
+                width: 32px !important;
+                height: 32px !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                position: relative !important;
+                z-index: 10 !important;
+                margin: auto !important;
+            }
+
+            /* Ícono SVG inline para TODOS los estados (cerrado, abierto, cerrar) */
+            button[aria-label*="chat"]::after,
+            button[aria-label*="Open"]::after,
+            button[aria-label*="Close"]::after,
+            .df-chat-bubble-button::after {
+                content: '' !important;
+                display: block !important;
+                width: 32px !important;
+                height: 32px !important;
+                background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>') !important;
+                background-size: 28px 28px !important;
+                background-repeat: no-repeat !important;
+                background-position: center !important;
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                pointer-events: none !important;
+                z-index: 5 !important;
+            }
+
+            /* Ventana del chat - Bordes redondeados Apple */
+            .df-messenger-wrapper,
+            df-messenger-chat {
+                border-radius: 24px !important;
+                box-shadow: 0 20px 60px rgba(6, 76, 57, 0.2) !important;
+                overflow: hidden !important;
+                max-height: 600px !important;
+                color: ${primario} !important;
+            }
+
+            /* Barra de título */
+            .df-messenger-titlebar,
+            df-messenger-titlebar {
+                border-radius: 24px 24px 0 0 !important;
+                padding: 20px !important;
+                font-weight: 600 !important;
+                letter-spacing: -0.02em !important;
+                background-color: ${textoPrimario50} !important;
+                color: ${blanco} !important;
+            }
+
+            /* Mensajes */
+            .df-messenger-message-list {
+                padding: 16px !important;
+            }
+
+            .df-messenger-message,
+            df-messenger-message {
+                border-radius: 16px !important;
+                padding: 12px 16px !important;
+                margin-bottom: 8px !important;
+                font-size: 0.9375rem !important;
+                line-height: 1.5 !important;
+                color: ${primario} !important;
+            }
+
+            /* Mensajes del usuario - usando clase exacta */
+            .df-messenger-message.user-message,
+            .message.user-message,
+            df-messenger-message[type="user"] {
+                background-color: ${textoPrimario50} !important;
+                color: ${primario} !important;
+            }
+
+            .df-messenger-message.bot-message,
+            .message.bot-message,
+            df-messenger-message[type="bot"] {
+                background-color: ${grisApple} !important;
+            }
+
+            /* Input de texto - usando clases exactas de Dialogflow ES */
+            .input-box-wrapper input,
+            .df-messenger-user-input,
+            .df-messenger-user-input-container input,
+            .df-messenger-user-input-container textarea,
+            input[type="text"],
+            textarea,
+            [role="textbox"],
+            div[contenteditable="true"] {
+                border-radius: 1rem !important;
+                padding: 12px 16px !important;
+                margin: 16px !important;
+                border: 1px solid transparent !important;
+                outline: none !important;
+                background-color: ${blanco} !important;
+                background: ${blanco} !important;
+                color: ${primario} !important;
+                transition: all 0.2s ease !important;
+            }
+
+            .input-box-wrapper input::placeholder,
+            .df-messenger-user-input::placeholder,
+            .df-messenger-user-input-container input::placeholder,
+            .df-messenger-user-input-container textarea::placeholder,
+            input[type="text"]::placeholder,
+            textarea::placeholder {
+                color: rgba(6, 76, 57, 0.5) !important;
+            }
+
+            /* Sin borde en focus/active */
+            .input-box-wrapper input:focus,
+            .input-box-wrapper input:active,
+            .df-messenger-user-input:focus,
+            .df-messenger-user-input-container input:focus,
+            .df-messenger-user-input-container textarea:focus,
+            input[type="text"]:focus,
+            input[type="text"]:active,
+            textarea:focus,
+            textarea:active,
+            [role="textbox"]:focus,
+            div[contenteditable="true"]:focus {
+                border: none !important;
+                border-color: transparent !important;
+                box-shadow: none !important;
+                outline: none !important;
+                background-color: ${textoPrimario50} !important;
+                background: ${textoPrimario50} !important;
+                color: ${primario} !important;
+            }
+
+            /* Botón de enviar */
+            button[aria-label*="Send"],
+            .df-messenger-send-icon {
+                color: ${primario} !important;
+                transition: all 0.2s ease !important;
+            }
+
+            button[aria-label*="Send"]:hover,
+            .df-messenger-send-icon:hover {
+                transform: scale(1.1) !important;
+            }
+
+            /* Añade esta regla justo debajo para forzar el color en el texto interno */
+            #messageList .message.user-message span {
+				color: var(--primario) !important;
+			}
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .df-messenger-wrapper,
+                df-messenger-chat {
+                    width: 4rem !important;
+                    max-width: 380px !important;
+                    max-height: 500px !important;
+                }
+
+                button[aria-label*="chat"],
+                button[aria-label*="Open"],
+                .df-chat-bubble-button {
+                    width: 56px !important;
+                    height: 56px !important;
+                }
+            }
+
+            /* Añade esta regla justo debajo para forzar el color en el texto interno */
+            #messageList .message.user-message span {
+				color: var(--primario) !important;
+			}
+        `;
+
+        // Inyectar los estilos en el shadow DOM
+        dfMessenger.shadowRoot.appendChild(style);
+        estilosAplicados = true;
+
+        console.log("🎨 Estilos Apple aplicados al chatbot de Dialogflow");
+
+        // Configurar MutationObserver para reinyectar estilos si Dialogflow los elimina
+        const observer = new MutationObserver((mutations) => {
+            const estiloExiste = dfMessenger.shadowRoot.querySelector(
+                "#estilos-apple-custom",
+            );
+            if (!estiloExiste) {
+                console.log(
+                    "⚠️ Dialogflow eliminó los estilos, reinyectando...",
+                );
+                aplicarEstilosDialogflow();
+            }
+        });
+
+        // Observar cambios en el shadow DOM
+        observer.observe(dfMessenger.shadowRoot, {
+            childList: true,
+            subtree: true,
+        });
+
+        // FORZAR COLOR DEL TEXTO EN MENSAJES DEL USUARIO
+        // Función para buscar elementos en Shadow DOMs anidados (deep traversal)
+        function findInShadow(root, selector) {
+            let found = Array.from(root.querySelectorAll(selector));
+            const shadowHosts = Array.from(root.querySelectorAll("*")).filter(
+                (el) => el.shadowRoot,
+            );
+            for (const host of shadowHosts) {
+                found = found.concat(findInShadow(host.shadowRoot, selector));
+            }
+            return found;
+        }
+
+        // Aplicar cada 100ms para asegurar que siempre tenga el color correcto
+        setInterval(() => {
+            const shadowRoot = dfMessenger.shadowRoot;
+            if (!shadowRoot) return;
+
+            // Leer el valor actual de --texto-primario-50 del documento
+            const rootStyles = getComputedStyle(document.documentElement);
+            const textoPrimario50 =
+                rootStyles.getPropertyValue("--texto-primario-50").trim() ||
+                "#f2f7f3";
+
+            // Buscar TODOS los mensajes del usuario en TODOS los Shadow DOMs anidados
+            const userMessages = findInShadow(
+                shadowRoot,
+                ".message.user-message",
+            );
+
+            userMessages.forEach((msg) => {
+                // Aplicar color al mensaje completo
+                msg.style.setProperty("color", textoPrimario50, "important");
+
+                // Aplicar color a TODOS los elementos hijos (span, div, etc.)
+                const allChildren = msg.querySelectorAll("*");
+                allChildren.forEach((child) => {
+                    child.style.setProperty(
+                        "color",
+                        textoPrimario50,
+                        "important",
+                    );
+                });
+
+                // Aplicar color directamente a los nodos de texto
+                const walker = document.createTreeWalker(
+                    msg,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false,
+                );
+
+                while (walker.nextNode()) {
+                    const textNode = walker.currentNode;
+                    if (textNode.parentElement) {
+                        textNode.parentElement.style.setProperty(
+                            "color",
+                            textoPrimario50,
+                            "important",
+                        );
+                    }
+                }
+            });
+        }, 100);
+
+        // FORZAR DIMENSIONES EN MÓVILES: Aplicar estilos al .chat-wrapper
+        // Solo aplicar en dispositivos móviles (≤768px)
+        setInterval(() => {
+            const shadowRoot = dfMessenger.shadowRoot;
+            if (!shadowRoot) return;
+
+            // Detectar si estamos en móvil
+            const isMobile = window.innerWidth <= 768;
+            if (!isMobile) return; // Solo aplicar en móviles
+
+            // Buscar el .chat-wrapper específicamente
+            const chatWrapper = findInShadow(shadowRoot, ".chat-wrapper")[0];
+
+            if (chatWrapper) {
+                // Aplicar estilos específicos al .chat-wrapper
+                chatWrapper.style.setProperty("width", "90vw", "important");
+                chatWrapper.style.setProperty("margin", "0 auto", "important");
+                chatWrapper.style.setProperty("left", "0", "important");
+                chatWrapper.style.setProperty("right", "0", "important");
+                chatWrapper.style.setProperty("height", "80vh", "important");
+                chatWrapper.style.setProperty("bottom", "96px", "important");
+            }
+        }, 100);
+
+        // CONTROLAR BORDER-RADIUS DEL WRAPPER según clase extended
+        setInterval(() => {
+            const shadowRoot = dfMessenger.shadowRoot;
+            if (!shadowRoot) return;
+
+            // Buscar el .df-messenger-wrapper
+            const wrapper = shadowRoot.querySelector(".df-messenger-wrapper");
+
+            if (wrapper) {
+                // Verificar si tiene la clase 'extended'
+                const hasExtended = wrapper.classList.contains("extended");
+
+                if (hasExtended) {
+                    // Con clase extended: border-radius 1.5rem
+                    wrapper.style.setProperty(
+                        "border-radius",
+                        "1.5rem",
+                        "important",
+                    );
+                } else {
+                    // Sin clase extended: border-radius 50%
+                    wrapper.style.setProperty(
+                        "border-radius",
+                        "50%",
+                        "important",
+                    );
+                }
+            }
+        }, 100);
+
+        // FORZAR BORDER-RADIUS DEL INPUT: 1rem
+        // Aplicar border-radius a todos los inputs y textareas
+        setInterval(() => {
+            const shadowRoot = dfMessenger.shadowRoot;
+            if (!shadowRoot) return;
+
+            // Buscar todos los inputs y textareas en Shadow DOMs anidados
+            const inputs = findInShadow(shadowRoot, "input").concat(
+                findInShadow(shadowRoot, "textarea"),
+                findInShadow(shadowRoot, "[role='textbox']"),
+                findInShadow(shadowRoot, "div[contenteditable='true']"),
+            );
+
+            inputs.forEach((input) => {
+                input.style.setProperty("border-radius", "1rem", "important");
+            });
+        }, 100);
+    }
+
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", aplicarEstilosDialogflow);
+    } else {
+        aplicarEstilosDialogflow();
+    }
+
+    // También intentar aplicar después de 2 segundos (cuando Dialogflow termina de cargar)
+    setTimeout(aplicarEstilosDialogflow, 2000);
+</script>
+
+<!-- Script de inicialización y configuración adicional -->
+<!-- IMPORTANTE: Carga diferida para asegurar que Trusted Types esté configurado -->
+<script is:inline>
+    /**
+     * Inicialización del Asistente Virtual con Dialogflow
+     *
+     * Estrategia de Carga:
+     * 1. Esperamos a que el DOM esté completamente cargado
+     * 2. Usamos requestAnimationFrame para asegurar que la política de Trusted Types
+     *    esté configurada (se ejecuta en el siguiente frame de renderizado)
+     * 3. Solo entonces cargamos el script de Dialogflow dinámicamente
+     *
+     * ¿Por qué esta estrategia?
+     * - Evita el error "createScriptURL" al asegurar que la política esté lista
+     * - Mejora el rendimiento al cargar el script de forma asíncrona
+     * - No bloquea la carga inicial de la página
+     */
+
+    // Función para cargar el script de Dialogflow de forma segura
+    function cargarDialogflowScript() {
+        // Verificar que no se haya cargado ya el script
+        // Buscamos tanto el script de ES (bootstrap.js) como el de CX (df-messenger.js)
+        if (
+            document.querySelector('script[src*="bootstrap.js"]') ||
+            document.querySelector('script[src*="df-messenger.js"]')
+        ) {
+            console.log("ℹ️ Script de Dialogflow ya cargado");
+            return;
+        }
+
+        // Crear el elemento script dinámicamente
+        // IMPORTANTE: Usamos Dialogflow ES (Essentials) en lugar de CX
+        const script = document.createElement("script");
+        script.src =
+            "https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1";
+        script.async = true;
+
+        // Evento de carga exitosa
+        script.onload = function () {
+            console.log("✅ Script de Dialogflow cargado correctamente");
+        };
+
+        // Evento de error en la carga
+        script.onerror = function () {
+            console.error(
+                "❌ Error al cargar el script de Dialogflow. Verifica tu conexión a internet.",
+            );
+        };
+
+        // Agregar el script al documento
+        document.head.appendChild(script);
+    }
+
+    // Esperar a que el documento esté listo
+    document.addEventListener("DOMContentLoaded", function () {
+        /**
+         * Usamos requestAnimationFrame para diferir la carga del script
+         * hasta el siguiente frame de renderizado. Esto asegura que:
+         * 1. La política de Trusted Types ya esté configurada
+         * 2. El DOM esté completamente renderizado
+         * 3. No bloqueemos la carga inicial de la página
+         */
+        requestAnimationFrame(() => {
+            // Timeout adicional de 0ms para asegurar que estamos en el siguiente ciclo de eventos
+            setTimeout(() => {
+                cargarDialogflowScript();
+            }, 0);
+        });
+
+        // Configuración de eventos del messenger (se ejecutará cuando el script cargue)
+        setTimeout(() => {
+            const dfMessenger = document.querySelector("df-messenger");
+
+            if (dfMessenger) {
+                // Evento: Messenger cargado
+                dfMessenger.addEventListener(
+                    "df-messenger-loaded",
+                    function () {
+                        console.log("✅ Asistente Virtual listo para usar");
+                    },
+                );
+
+                // Evento: Chat abierto
+                dfMessenger.addEventListener("df-chat-open", function () {
+                    console.log("💬 Chat abierto - Usuario interactuando");
+                });
+
+                // Evento: Chat cerrado
+                dfMessenger.addEventListener("df-chat-close", function () {
+                    console.log("📪 Chat cerrado");
+                });
+
+                // Evento: Mensaje del usuario
+                dfMessenger.addEventListener(
+                    "df-user-input-entered",
+                    function (e) {
+                        console.log("📤 Usuario envió:", e.detail.input);
+                    },
+                );
+
+                // Evento: Respuesta del bot
+                dfMessenger.addEventListener(
+                    "df-response-received",
+                    function (e) {
+                        console.log("📥 Bot respondió:", e.detail);
+                    },
+                );
+            } else {
+                // Si el messenger no está disponible, reintentamos después de 500ms
+                console.warn(
+                    "⚠️ df-messenger no encontrado, reintentando en 500ms...",
+                );
+            }
+        }, 1000); // Esperamos 1 segundo para que el script cargue
+    });
+</script>

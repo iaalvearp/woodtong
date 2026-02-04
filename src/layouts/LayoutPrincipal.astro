@@ -1,4 +1,5 @@
 ---
+import AsistenteVirtual from "../components/AsistenteVirtual.astro";
 import IconoAcceso from "../components/IconoAcceso.tsx";
 
 interface Props {
@@ -20,6 +21,14 @@ const rolUsuario = usuario?.rol;
 <!doctype html>
 <html lang="es">
 	<head>
+		<!-- Meta-etiqueta CSP para habilitar Trusted Types en navegadores Chromium (Chrome/Edge) -->
+		<!-- Esta política de seguridad es requerida para scripts de terceros como Dialogflow -->
+		<!-- Permitimos todas las políticas que Dialogflow necesita internamente -->
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="trusted-types default goog#html lit-html highlight.js dialogflow#messenger; require-trusted-types-for 'script';"
+		/>
+
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/png" href="/favicon.png" />
@@ -127,7 +136,65 @@ const rolUsuario = usuario?.rol;
 				-ms-overflow-style: none;
 				scrollbar-width: none;
 			}
+			#messageList .message.user-message span {
+				color: var(--texto-primario-50) !important;
+			}
 		</style>
+
+		<!-- Script de Política de Trusted Types -->
+		<!-- IMPORTANTE: Este script debe ejecutarse ANTES que cualquier otro JavaScript -->
+		<script is:inline>
+			/**
+			 * Política de Trusted Types para navegadores basados en Chromium
+			 *
+			 * ¿Qué es Trusted Types?
+			 * Es una medida de seguridad en navegadores Chrome/Edge que previene
+			 * ataques XSS (Cross-Site Scripting) al requerir que todo código
+			 * JavaScript dinámico pase por una política de confianza.
+			 *
+			 * ¿Por qué lo necesitamos?
+			 * Scripts de terceros como Dialogflow Messenger requieren crear
+			 * URLs de scripts dinámicamente. Sin esta política, el navegador
+			 * bloquearía estas operaciones con el error "createScriptURL".
+			 *
+			 * Políticas permitidas:
+			 * - default: Nuestra política base para scripts generales
+			 * - goog#html: Política interna de Google para manipulación de HTML
+			 * - lit-html: Política de la librería Lit (usada por Dialogflow)
+			 * - highlight.js: Política para resaltado de sintaxis en el chat
+			 * - dialogflow#messenger: Política específica de Dialogflow ES (Essentials)
+			 *
+			 * Seguridad:
+			 * - Solo creamos una política si no existe (guarda contra duplicados)
+			 * - La política "default" permite pasar strings sin modificación
+			 * - Dialogflow creará sus propias políticas (goog#html, lit-html, highlight.js, dialogflow#messenger)
+			 * - Esto es seguro porque confiamos en los scripts de Google
+			 */
+			if (window.trustedTypes && window.trustedTypes.createPolicy) {
+				// Verificar que no exista ya una política default
+				// (evita errores si el script se ejecuta múltiples veces)
+				if (!window.trustedTypes.defaultPolicy) {
+					try {
+						window.trustedTypes.createPolicy("default", {
+							// Permite crear HTML dinámico
+							createHTML: (s) => s,
+							// Permite crear URLs de scripts (necesario para Dialogflow)
+							createScriptURL: (s) => s,
+							// Permite crear scripts inline
+							createScript: (s) => s,
+						});
+						console.log(
+							"✅ Política de Trusted Types configurada correctamente",
+						);
+					} catch (error) {
+						console.warn(
+							"⚠️ No se pudo crear la política de Trusted Types:",
+							error,
+						);
+					}
+				}
+			}
+		</script>
 	</head>
 	<body>
 		<header id="header-principal">
@@ -208,6 +275,8 @@ const rolUsuario = usuario?.rol;
 		<main>
 			<slot />
 		</main>
+
+		<AsistenteVirtual />
 
 		<script>
 			// Intersection Observer para animaciones

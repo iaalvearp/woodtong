@@ -23,29 +23,42 @@ const { muebles } = Astro.props;
     </div>
 
     <div class="grid-galeria">
-        {muebles.map((mueble, indice) => (
-            <div 
-                class={`tarjeta-producto revelar-arriba ${indice > 4 ? 'elemento-bloqueado' : ''}`}
-                style={`transition-delay: ${indice * 0.1}s`}
-            >
-                <div class="contenedor-imagen">
-                    <img src={mueble.url_imagen} alt={mueble.descripcion} loading="lazy" />
-                    {indice > 4 && (
-                        <div class="overlay-bloqueo">
-                            <button class="btn-desbloquear" id="btn-abrir-modal">
-                                <span>Ver más detalles</span>
-                                <span class="material-symbols-outlined">lock_open</span>
-                            </button>
-                        </div>
-                    )}
+        {
+            muebles.map((mueble, indice) => (
+                <div
+                    class={`tarjeta-producto revelar-arriba ${indice > 4 ? "elemento-bloqueado" : ""}`}
+                    style={`transition-delay: ${indice * 0.1}s`}
+                >
+                    <div class="contenedor-imagen">
+                        <img
+                            src={mueble.url_imagen}
+                            alt={mueble.descripcion}
+                            loading="lazy"
+                        />
+                        {indice > 4 && (
+                            <div class="overlay-bloqueo">
+                                <button
+                                    class="btn-desbloquear"
+                                    id="btn-abrir-modal"
+                                >
+                                    <span>Ver más detalles</span>
+                                    <span class="material-symbols-outlined">
+                                        lock_open
+                                    </span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    <div class="info-producto">
+                        <span class="categoria">{mueble.categoria}</span>
+                        <h3>{mueble.nombre}</h3>
+                        <p class="precio">
+                            ${mueble.precio.toLocaleString("es-MX")}
+                        </p>
+                    </div>
                 </div>
-                <div class="info-producto">
-                    <span class="categoria">{mueble.categoria}</span>
-                    <h3>{mueble.nombre}</h3>
-                    <p class="precio">${mueble.precio.toLocaleString('es-MX')}</p>
-                </div>
-            </div>
-        ))}
+            ))
+        }
     </div>
 </section>
 
@@ -65,7 +78,7 @@ const { muebles } = Astro.props;
         font-size: 2.5rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
-        color: var(--oscuro);
+        color: var(--primario); /* Color primario para títulos */
     }
 
     .header-galeria p {
