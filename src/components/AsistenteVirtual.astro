@@ -12,16 +12,38 @@
  * - Idioma: Español
  */
 
-const agentId = import.meta.env.PUBLIC_DIALOGFLOW_AGENT_ID;
-const chatTitle = import.meta.env.PUBLIC_DIALOGFLOW_CHAT_TITLE;
+// Validación y fallbacks para variables de entorno
+const agentId = import.meta.env.PUBLIC_DIALOGFLOW_AGENT_ID || "";
+const chatTitle = import.meta.env.PUBLIC_DIALOGFLOW_CHAT_TITLE || "Chat";
+
+// Console logs para debugging en producción
+if (!import.meta.env.PUBLIC_DIALOGFLOW_AGENT_ID) {
+    console.error(
+        "[AsistenteVirtual] PUBLIC_DIALOGFLOW_AGENT_ID no está definido en las variables de entorno",
+    );
+}
+if (!import.meta.env.PUBLIC_DIALOGFLOW_CHAT_TITLE) {
+    console.warn(
+        '[AsistenteVirtual] PUBLIC_DIALOGFLOW_CHAT_TITLE no está definido, usando fallback "Chat"',
+    );
+}
 ---
 
-<!-- Dialogflow Messenger -->
-<df-messenger
-    intent="WELCOME"
-    chat-title={chatTitle}
-    agent-id={agentId}
-    language-code="es"></df-messenger>
+<!-- Dialogflow Messenger - Solo renderizar si agentId está definido -->
+{agentId && (
+    <df-messenger
+        intent="WELCOME"
+        chat-title={chatTitle}
+        agent-id={agentId}
+        language-code="es">
+    </df-messenger>
+)}
+
+{!agentId && (
+    <div style="display: none;" data-error="dialogflow-env-missing">
+        <!-- Dialogflow no disponible: PUBLIC_DIALOGFLOW_AGENT_ID no configurado -->
+    </div>
+)}
 
 <style is:global>
     /* ========================================
