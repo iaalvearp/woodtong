@@ -4,6 +4,7 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
+    site: 'https://woodtong.pages.dev',
     output: 'server',
     adapter: cloudflare({
         imageService: 'cloudflare',
