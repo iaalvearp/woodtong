@@ -47,15 +47,17 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.usuario = usuario;
 
     // Freshness Check: Verificar si la sesión necesita renovación
+    const refreshThreshold = context.locals.runtime?.env?.REFRESH_THRESHOLD_HOURS;
     const debeRenovar = await necesitaRenovacion(
         db,
         tokenSesion,
-        parseInt(context.locals.runtime.env.REFRESH_THRESHOLD_HOURS || "1"),
+        parseInt(typeof refreshThreshold === 'string' ? refreshThreshold : "1"),
     );
 
     if (debeRenovar) {
+        const sessionDays = context.locals.runtime?.env?.SESSION_EXPIRATION_DAYS;
         const diasExpiracion = parseInt(
-            context.locals.runtime.env.SESSION_EXPIRATION_DAYS || "7",
+            typeof sessionDays === 'string' ? sessionDays : "7",
         );
         const nuevoToken = await renovarSesion(db, tokenSesion, diasExpiracion);
 
