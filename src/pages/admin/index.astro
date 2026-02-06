@@ -21,7 +21,11 @@ interface Prospecto {
     fecha: string;
 }
 
-const db = Astro.locals.runtime.env.DB;
+const db = Astro.locals.runtime?.env?.DB;
+
+if (!db) {
+    throw new Error("Database not available. Check Cloudflare D1 binding configuration in Cloudflare Pages dashboard.");
+}
 
 // Verificar autenticación desde el middleware
 const usuario = Astro.locals.usuario;

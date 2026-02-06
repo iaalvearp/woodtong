@@ -15,8 +15,14 @@ interface Mueble {
     orden_hero: number;
 }
 
-// Conexión real con Cloudflare D1
-const db = Astro.locals.runtime.env.DB;
+// Conexión real con Cloudflare D1 con null safety
+const db = Astro.locals.runtime?.env?.DB;
+
+if (!db) {
+    throw new Error(
+        "Database not available. Check Cloudflare D1 binding configuration in Cloudflare Pages dashboard.",
+    );
+}
 
 // Consulta a la base de datos ordenada por orden_hero
 const { results } = await db
