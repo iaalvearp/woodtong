@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 interface Props {
     usuarioActivo: boolean;
-    rolUsuario?: string;
+    rolUsuario: string;
 }
 
 export default function IconoAcceso({ usuarioActivo, rolUsuario }: Props) {

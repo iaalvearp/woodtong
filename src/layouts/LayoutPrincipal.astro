@@ -15,7 +15,8 @@ const {
 // Detección de sesión desde el middleware
 const usuario = Astro.locals.usuario;
 const usuarioActivo = !!usuario;
-const rolUsuario = usuario?.rol;
+// Ensure rolUsuario is always a string to prevent serialization issues in production
+const rolUsuario = usuario?.rol ?? "";
 ---
 
 <!doctype html>
