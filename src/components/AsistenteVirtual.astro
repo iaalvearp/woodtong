@@ -12,9 +12,10 @@
  * - Idioma: Español
  */
 
-// Validación y fallbacks para variables de entorno
-const agentId = import.meta.env.PUBLIC_DIALOGFLOW_AGENT_ID || "";
-const chatTitle = import.meta.env.PUBLIC_DIALOGFLOW_CHAT_TITLE || "Chat";
+// Configuración de Dialogflow (hardcoded para evitar problemas con Cloudflare Pages)
+// Cloudflare Pages no soporta correctamente variables PUBLIC_* en el dashboard
+const agentId = "2211860b-c1e0-477c-944d-7168d4888f6b";
+const chatTitle = "WoodBot";
 ---
 
 <!-- Dialogflow Messenger - Solo renderizar si agentId está definido -->
