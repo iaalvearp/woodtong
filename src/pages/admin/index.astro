@@ -303,11 +303,7 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
         max-width: 1200px;
         margin: 8rem auto 4rem;
         padding: 0 1.5rem;
-        background: linear-gradient(
-            180deg,
-            var(--primario) 30%,
-            var(--gris-apple) 100%
-        );
+        background: transparent;
         border-radius: 1.5rem;
     }
 
@@ -320,10 +316,11 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
         font-size: 2.5rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
+        color: var(--texto-primario-50);
     }
 
     .admin-header p {
-        color: var(--texto-secundario);
+        color: var(--texto-primario-200);
     }
 
     /* Acceso Denegado Styles */
@@ -334,11 +331,13 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
         justify-content: center;
         text-align: center;
         padding: 2rem;
-        background: linear-gradient(
-            180deg,
-            var(--primario) 30%,
-            var(--gris-apple) 100%
-        );
+    }
+
+    .admin-container {
+        max-width: 1200px;
+        margin: 8rem auto 4rem;
+        padding: 0 1.5rem;
+        border-radius: 1.5rem;
     }
 
     .mensaje-denegado {

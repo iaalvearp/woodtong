@@ -25,14 +25,17 @@ try {
     if (!db) {
         throw new Error("Database not available");
     }
-    
+
     // Consulta a la base de datos ordenada por orden_hero
     const { results } = await db
         .prepare("SELECT * FROM Muebles ORDER BY orden_hero ASC")
         .all();
     mueblesDestacados = results as unknown as Mueble[];
 } catch (error) {
-    console.warn("Database not available. Using mock data for development:", error);
+    console.warn(
+        "Database not available. Using mock data for development:",
+        error,
+    );
     // Usar datos de ejemplo si la BD no está disponible
     mueblesDestacados = [
         {
@@ -40,23 +43,23 @@ try {
             nombre: "Sofá Minimalista",
             descripcion: "Sofá elegante de líneas puras",
             precio: 15000,
-            url_imagen: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
+            url_imagen:
+                "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
             categoria: "Sofás",
-            orden_hero: 1
+            orden_hero: 1,
         },
         {
             id_mueble: 2,
             nombre: "Mesa de Centro",
             descripcion: "Mesa moderna de madera",
             precio: 8500,
-            url_imagen: "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237",
+            url_imagen:
+                "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237",
             categoria: "Mesas",
-            orden_hero: 2
-        }
+            orden_hero: 2,
+        },
     ];
 }
-
-
 ---
 
 <LayoutPrincipal titulo="Inicio">
@@ -98,8 +101,7 @@ try {
 <style>
     .seccion-cta {
         background-color: var(--gris-apple);
-        padding: 6rem 1.5rem;
-        margin-top: 4rem;
+        padding: 8rem 1.5rem;
         text-align: center;
     }
 

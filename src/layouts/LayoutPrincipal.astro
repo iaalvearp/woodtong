@@ -98,6 +98,23 @@ const rolUsuario = usuario?.rol ?? "";
 				line-height: 1.5;
 			}
 
+			.body-admin {
+				min-height: calc(100dvh - 128px);
+				background: linear-gradient(
+					180deg,
+					var(--primario) 30%,
+					var(--texto-primario-200) 100%
+				);
+			}
+
+			.body-public {
+				background: linear-gradient(
+					180deg,
+					var(--primario) 40%,
+					var(--texto-primario-200) 100%
+				);
+			}
+
 			h1,
 			h2,
 			h3,
@@ -197,7 +214,11 @@ const rolUsuario = usuario?.rol ?? "";
 			}
 		</script>
 	</head>
-	<body>
+	<body
+		class={Astro.locals.usuario?.rol === "admin"
+			? "body-admin"
+			: "body-public"}
+	>
 		<header id="header-principal">
 			<nav class="nav-container">
 				<svg
