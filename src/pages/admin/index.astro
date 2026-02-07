@@ -303,10 +303,17 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
         max-width: 1200px;
         margin: 8rem auto 4rem;
         padding: 0 1.5rem;
+        background: linear-gradient(
+            180deg,
+            var(--primario) 30%,
+            var(--gris-apple) 100%
+        );
+        border-radius: 1.5rem;
     }
 
     .admin-header {
         margin-bottom: 3rem;
+        padding: 2rem;
     }
 
     .admin-header h1 {
@@ -327,6 +334,11 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
         justify-content: center;
         text-align: center;
         padding: 2rem;
+        background: linear-gradient(
+            180deg,
+            var(--primario) 30%,
+            var(--gris-apple) 100%
+        );
     }
 
     .mensaje-denegado {
@@ -363,7 +375,7 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
         display: flex;
         gap: 1rem;
         margin-bottom: 2rem;
-        background: var(--gris-apple);
+        background: var(--blanco);
         padding: 0.5rem;
         border-radius: 1rem;
         width: fit-content;
@@ -401,6 +413,7 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
         overflow: hidden;
         border: 1px solid rgba(0, 0, 0, 0.05);
         box-shadow: 0 4px 20px var(--sombra-suave);
+        padding: 1rem;
     }
 
     table {
