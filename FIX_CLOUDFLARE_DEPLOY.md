@@ -2,11 +2,13 @@
 
 ## Cambio Realizado
 
-Se ha creado el archivo `wrangler.jsonc` para solucionar el problema de bindings en Cloudflare Pages.
+Se ha solucionado el problema `[object Object]` agregando el flag `disable_nodejs_process_v2` a los compatibility_flags.
 
-## ¿Por qué funciona?
+## ¿Por qué ocurría este error?
 
-Según la comunidad de Cloudflare, cuando haces deployment desde GitHub a Cloudflare Pages, el sistema prefiere leer el archivo `wrangler.jsonc` en lugar del `wrangler.toml`. El archivo TOML puede tener problemas de parsing o ser ignorado completamente, lo que causaba que los bindings (KV y D1) no se configuraran.
+El problema era causado por la `compatibility_date: "2026-02-03"`. A partir del 2025-09-15, Cloudflare activa `nodejs_process_v2` por defecto, lo cual causa que los proyectos de Astro devuelvan `[object Object]` en lugar del HTML renderizado al hacer deployment en Cloudflare Pages.
+
+Referencia: [Astro Issue #14511](https://github.com/withastro/astro/issues/14511)
 
 ## Archivo Nuevo
 
