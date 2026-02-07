@@ -13,6 +13,11 @@ export default defineConfig({
         },
     }),
     integrations: [react()],
+    vite: {
+        define: {
+            global: 'globalThis',
+        },
+    },
     server: {
         port: 4321,
         hmr: {

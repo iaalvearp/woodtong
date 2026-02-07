@@ -18,18 +18,45 @@ interface Mueble {
 // Conexión real con Cloudflare D1 con null safety
 const db = Astro.locals.runtime?.env?.DB;
 
-if (!db) {
-    throw new Error(
-        "Database not available. Check Cloudflare D1 binding configuration in Cloudflare Pages dashboard.",
-    );
+// Obtener muebles desde la base de datos o usar datos de ejemplo
+let mueblesDestacados: Mueble[] = [];
+
+try {
+    if (!db) {
+        throw new Error("Database not available");
+    }
+    
+    // Consulta a la base de datos ordenada por orden_hero
+    const { results } = await db
+        .prepare("SELECT * FROM Muebles ORDER BY orden_hero ASC")
+        .all();
+    mueblesDestacados = results as unknown as Mueble[];
+} catch (error) {
+    console.warn("Database not available. Using mock data for development:", error);
+    // Usar datos de ejemplo si la BD no está disponible
+    mueblesDestacados = [
+        {
+            id_mueble: 1,
+            nombre: "Sofá Minimalista",
+            descripcion: "Sofá elegante de líneas puras",
+            precio: 15000,
+            url_imagen: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7",
+            categoria: "Sofás",
+            orden_hero: 1
+        },
+        {
+            id_mueble: 2,
+            nombre: "Mesa de Centro",
+            descripcion: "Mesa moderna de madera",
+            precio: 8500,
+            url_imagen: "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237",
+            categoria: "Mesas",
+            orden_hero: 2
+        }
+    ];
 }
 
-// Consulta a la base de datos ordenada por orden_hero
-const { results } = await db
-    .prepare("SELECT * FROM Muebles ORDER BY orden_hero ASC")
-    .all();
 
-const mueblesDestacados = results as unknown as Mueble[];
 ---
 
 <LayoutPrincipal titulo="Inicio">
