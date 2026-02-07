@@ -372,12 +372,14 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
 
     .tabs-buttons {
         display: flex;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 382px;
         gap: 1rem;
         margin-bottom: 2rem;
         background: var(--blanco);
         padding: 0.5rem;
         border-radius: 1rem;
-        width: fit-content;
     }
 
     .tab-btn {
@@ -552,4 +554,9 @@ const prospectos = prospectosRaw as unknown as Prospecto[];
             transform: translateY(0);
         }
     }
+
+    @media (max-width: 768px) {
+        .table-wrapper {
+            overflow-x: auto;
+        }
 </style>
