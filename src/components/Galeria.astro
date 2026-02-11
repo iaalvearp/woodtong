@@ -16,53 +16,59 @@ interface Props {
 const { muebles } = Astro.props;
 ---
 
-<section class="seccion-galeria">
-    <div class="header-galeria revelar-arriba">
-        <h2>Colección Destacada</h2>
-        <p>Piezas seleccionadas que definen la esencia de tu hogar.</p>
-    </div>
+<section class="contenedor-galeria">
+    <div class="seccion-galeria">
+        <div class="header-galeria revelar-arriba">
+            <h2>Colección Destacada</h2>
+            <p>Piezas seleccionadas que definen la esencia de tu hogar.</p>
+        </div>
 
-    <div class="grid-galeria">
-        {
-            muebles.map((mueble, indice) => (
-                <div
-                    class={`tarjeta-producto revelar-arriba ${indice > 4 ? "elemento-bloqueado" : ""}`}
-                    style={`transition-delay: ${indice * 0.1}s`}
-                >
-                    <div class="contenedor-imagen">
-                        <img
-                            src={mueble.url_imagen}
-                            alt={mueble.descripcion}
-                            loading="lazy"
-                        />
-                        {indice > 4 && (
-                            <div class="overlay-bloqueo">
-                                <button
-                                    class="btn-desbloquear"
-                                    id="btn-abrir-modal"
-                                >
-                                    <span>Ver más detalles</span>
-                                    <span class="material-symbols-outlined">
-                                        lock_open
-                                    </span>
-                                </button>
-                            </div>
-                        )}
+        <div class="grid-galeria">
+            {
+                muebles.map((mueble, indice) => (
+                    <div
+                        class={`tarjeta-producto revelar-arriba ${indice > 4 ? "elemento-bloqueado" : ""}`}
+                        style={`transition-delay: ${indice * 0.1}s`}
+                    >
+                        <div class="contenedor-imagen">
+                            <img
+                                src={mueble.url_imagen}
+                                alt={mueble.descripcion}
+                                loading="lazy"
+                            />
+                            {indice > 4 && (
+                                <div class="overlay-bloqueo">
+                                    <button
+                                        class="btn-desbloquear"
+                                        id="btn-abrir-modal"
+                                    >
+                                        <span>Ver más detalles</span>
+                                        <span class="material-symbols-outlined">
+                                            lock_open
+                                        </span>
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        <div class="info-producto">
+                            <span class="categoria">{mueble.categoria}</span>
+                            <h3>{mueble.nombre}</h3>
+                            <p class="precio">
+                                ${mueble.precio.toLocaleString("es-MX")}
+                            </p>
+                        </div>
                     </div>
-                    <div class="info-producto">
-                        <span class="categoria">{mueble.categoria}</span>
-                        <h3>{mueble.nombre}</h3>
-                        <p class="precio">
-                            ${mueble.precio.toLocaleString("es-MX")}
-                        </p>
-                    </div>
-                </div>
-            ))
-        }
+                ))
+            }
+        </div>
     </div>
 </section>
 
 <style>
+    .contenedor-galeria {
+        width: 100%;
+        background-color: var(--blanco);
+    }
     .seccion-galeria {
         max-width: 1200px;
         margin: 0 auto;
